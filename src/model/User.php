@@ -5,6 +5,30 @@ namespace model;
 class User {
 
   /**
+   * The username session var
+   * @var String
+   */
+  private $usernameSession = "User::username";
+
+  /**
+   * The password session var
+   * @var String
+   */
+  private $passwordSession = "User::password";
+
+  /**
+   * The uniqueID session var
+   * @var String
+   */
+  private $uniqueIDSession = "User::uniqueID";
+
+  /**
+   * The clientIdentifier session var, possible an ip-adress
+   * @var String
+   */
+  private $clientIdentifier = "User::clientIdentifier";
+
+  /**
    * The users unique ID
    * @var Integer Example 123
    */ 
@@ -55,5 +79,47 @@ class User {
    */
   public function getPassword() {
     return $this->password;
+  }
+
+  /**
+   * Hashes the password, todo: Fix it.
+   */ 
+  public function hashPassword() {
+    # FIX IT!
+    return crypt($this->password);
+  }
+
+  /**
+   * Checks if the user is logged in according to the session.
+   * @return Boolean
+   */ 
+  public function userIsLoggedIn() {
+    if (isset($_SESSION[$this->uniqueIDSession]) ? $this->userID : "" &&
+        isset($_SESSION[$this->usernameSession]) ? $this->username : "" &&
+        isset($_SESSION[$this->passwordSession]) ? $this->password : "" &&
+        isset($_SESSION[$this->clientIdentifier]) ? $this->username : "") {
+        var_dump($_SESSION[$this->clientIdentifier]);
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Signs the user in, i.e. sets the session vars.
+   */
+  public function login() {
+    $_SESSION[$this->uniqueIDSession] = $this->userID;
+    $_SESSION[$this->usernameSession] = $this->username;
+    $_SESSION[$this->passwordSession] = $this->password;
+    $_SESSION[$this->clientIdentifier] = $_SERVER["REMOTE_ADDR"];
+  }
+
+  /**
+   * Signs out the user, i.e. kills the session.
+   */
+  public function logout() {
+    unset($_SESSION[$this->uniqueIDSession]);
+    unset($_SESSION[$this->usernameSession]);
+    unset($_SESSION[$this->passwordSession]);
   }
 }

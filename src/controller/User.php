@@ -1,0 +1,57 @@
+<?php
+
+namespace controller;
+
+require_once("src/model/User.php");
+require_once("src/view/User.php");
+
+class User {
+
+  /**
+   * @var Userview
+   */
+  private $view;
+
+  /**
+   * @var Usermodel
+   */
+  private $model;
+  
+  function __construct() {
+    $this->model = new \model\User(1, "Jesper", "asdasd");
+    $this->view = new \view\User($this->model);
+  }
+
+  /**
+   * 
+   */ 
+  public function doLogin() {
+    $user = $this->model->getUserID();
+
+    // Submitted the form?
+    if ($this->view->didSubmit()) {
+      // Valid user credentials?
+      if ($this->view->userCredentialsIsValid()) {
+        // Login user.
+        $this->model->login($user);
+      }
+    }
+
+    // Render a view.
+    return $this->view->showPage();
+    
+  }
+
+  public function doLogout() {
+    // Pressed logout?
+    if ($this->view->didPressLogout()) {
+      // Logout the user.
+      $this->model->logout($user);
+      // Redirect!
+      header('Location: ' . $_SERVER['PHP_SELF']);
+    }
+
+    // Render a view.
+    return $this->view->showPage();
+  }
+}
