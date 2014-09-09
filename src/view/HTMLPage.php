@@ -17,6 +17,7 @@ class HTMLPage {
         <title>$title</title>
       </head>
       <body>
+        <h1>Laborationskod jh222xk</h1>
         $body
       </body>
       </html>
