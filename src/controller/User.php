@@ -41,14 +41,12 @@ class User {
    * 
    */ 
   public function doLogin() {
-    $user = $this->model->getUserID();
-
     // Submitted the form?
     if ($this->view->didSubmit()) {
       // Valid user credentials?
       if ($this->view->userCredentialsIsValid()) {
         // Login user.
-        $this->model->login($user);
+        $this->model->login();
       }
     }
 
@@ -61,7 +59,7 @@ class User {
     // Pressed logout?
     if ($this->view->didPressLogout()) {
       // Logout the user.
-      $this->model->logout($user);
+      $this->model->logout();
       // Redirect!
       header('Location: ' . $_SERVER['PHP_SELF']);
     }

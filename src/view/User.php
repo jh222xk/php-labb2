@@ -52,6 +52,21 @@ class User {
       $this->message->save("Inloggning lyckades!");
       return true;
     }
+    elseif(empty($username) && empty($password)) {
+      $this->message->save("Fel användarnamn!");
+    }
+    elseif($username && empty($password)) {
+      $this->message->save("Fel lösenord!");
+    }
+    elseif($password && empty($username)) {
+      $this->message->save("Fel användarnamn!"); 
+    }
+    elseif($username === $this->model->getUsername() && $password !== $this->model->getPassword()) {
+      $this->message->save("Felaktigt användarnamn och/eller lösenord");
+    }
+    elseif($password === $this->model->getPassword() && $username !== $this->model->getUsername()) {
+      $this->message->save("Felaktigt användarnamn och/eller lösenord");
+    }
 
     return false;
   }
@@ -63,7 +78,7 @@ class User {
   public function showLogin() {
     $ret = "
       <h2>Ej inloggad</h2>
-      <form action='' method='post'>
+      <form action='.' method='post'>
         <fieldset>
           <legend>Login - Skriv in användarnamn och lösenord</legend>
           <label>Användarnamn: </label>
@@ -78,18 +93,6 @@ class User {
     ";
 
     if ($this->didSubmit()) {
-      if ($_POST["password"] !== $this->model->getPassword()) {
-        $this->message->save("Fel lösenord!");
-      }
-      if ($_POST["username"] !== $this->model->getUsername()) {
-        $this->message->save("Fel användarnamn!");
-      }
-      if ($_POST["username"] === $this->model->getUsername() && $_POST["password"] !== $this->model->getPassword()) {
-        $this->message->save("Felaktigt användarnamn och/eller lösenord");
-      }
-      if ($_POST["password"] === $this->model->getPassword() && $_POST["username"] !== $this->model->getUsername()) {
-        $this->message->save("Felaktigt användarnamn och/eller lösenord");
-      }
       header('Location: ' . $_SERVER['PHP_SELF']);
     }
     else {
