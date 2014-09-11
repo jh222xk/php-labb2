@@ -28,6 +28,8 @@ class User {
    */
   private $clientIdentifier = "User::clientIdentifier";
 
+  private $token;
+
   /**
    * The users unique ID
    * @var Integer Example 123
@@ -93,12 +95,16 @@ class User {
    * Checks if the user is logged in according to the session.
    * @return Boolean
    */ 
-  public function userIsLoggedIn() {
-    if (isset($_SESSION[$this->uniqueIDSession]) ? $this->userID : "" &&
-        isset($_SESSION[$this->usernameSession]) ? $this->username : "" &&
-        isset($_SESSION[$this->passwordSession]) ? $this->password : "" &&
-        isset($_SESSION[$this->clientIdentifier]) ? $this->username : "") {
-        var_dump($_SESSION[$this->clientIdentifier]);
+  public function userIsLoggedIn($clientIdentifier) {
+    // var_dump($this->getToken());
+
+    $this->generateToken($clientIdentifier);
+    // die();
+    if ($_SESSION[$this->uniqueIDSession] === $this->userID
+        && $_SESSION[$this->usernameSession] === $this->username
+        && $_SESSION[$this->passwordSession] === $this->password
+        && $_SESSION[$this->clientIdentifier] === $clientIdentifier) {
+        // var_dump($_SESSION[$this->clientIdentifier]);
       return true;
     }
     return false;
@@ -107,11 +113,15 @@ class User {
   /**
    * Signs the user in, i.e. sets the session vars.
    */
-  public function login() {
+  public function login($clientIdentifier) {
+    $this->generateToken($clientIdentifier);
     $_SESSION[$this->uniqueIDSession] = $this->userID;
     $_SESSION[$this->usernameSession] = $this->username;
     $_SESSION[$this->passwordSession] = $this->password;
-    $_SESSION[$this->clientIdentifier] = $_SERVER["REMOTE_ADDR"];
+    $_SESSION[$this->clientIdentifier] = $clientIdentifier;
+    // var_dump($this->getToken());
+    // die();
+    // $_SESSION["USER_AGENT"] = $_SERVER['HTTP_USER_AGENT'];
   }
 
   /**
@@ -121,5 +131,13 @@ class User {
     unset($_SESSION[$this->uniqueIDSession]);
     unset($_SESSION[$this->usernameSession]);
     unset($_SESSION[$this->passwordSession]);
+  }
+
+  public function getToken() {
+    return $this->token;
+  }
+
+  public function generateToken($input) {
+    $this->token = md5($input);
   }
 }

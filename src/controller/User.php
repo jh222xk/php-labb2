@@ -29,7 +29,8 @@ class User {
    */
   public function showPage() {
     // User logged in, giv'em the logout!
-    if ($this->model->userIsLoggedIn()) {
+    if ($this->model->userIsLoggedIn($this->view->getClientIdentifier()) || $this->view->cookieExist()) {
+      $this->view->loginThroughCookies();
       return $this->doLogout();
     }
     else {
@@ -45,10 +46,15 @@ class User {
     if ($this->view->didSubmit()) {
       // Valid user credentials?
       if ($this->view->userCredentialsIsValid()) {
+        if ($this->view->rememberUser()) {
+          $this->view->setCookies();
+        }
         // Login user.
-        $this->model->login();
+        $this->model->login($this->view->getClientIdentifier());
       }
     }
+
+    // var_dump($_SESSION);
 
     // Render a view.
     return $this->view->showLogin();
@@ -59,12 +65,21 @@ class User {
     // Pressed logout?
     if ($this->view->didPressLogout()) {
       // Logout the user.
+      // var_dump($this->cookieExist());
+      // die();
+      if ($this->view->cookieExist()) {
+        $this->view->killCookies();
+      }
       $this->model->logout();
       // Redirect!
       header('Location: ' . $_SERVER['PHP_SELF']);
     }
 
+    var_dump($_SESSION);
+
     // Render a view.
     return $this->view->showLogout();
   }
+
+
 }

@@ -11,10 +11,25 @@ class User {
   private $model;
 
   private $message;
+
+  private $rememberMeUsernameCookie = "User::Username";
+
+  private $rememberMePasswordCookie = "User::Password";
   
   function __construct(\model\User $model) {
     $this->model = $model;
     $this->message = new \view\CookieJar();
+  }
+
+  /**
+   * Do the user want to be remembered?
+   * @return Boolean
+   */
+  public function rememberUser() {
+    if (isset($_POST['remember'])) {
+      return true;
+    }
+    return false;
   }
 
   /**
@@ -86,7 +101,7 @@ class User {
           <label>Lösenord: </label>
           <input type='password' size='20' name='password' value='' />
           <label>Håll mig inloggad: </label>
-          <input type='checkbox' name='' />
+          <input type='checkbox' name='remember' />
           <input type='submit' value='Logga in' name='login' />
         </fieldset>
       </form>
@@ -117,5 +132,60 @@ class User {
     ";
     $ret .= $this->message->load();
     return $ret;
+  }
+
+  /**
+   * Get the clients user agent and ip.
+   * The user agent is'nt enough for session hijacking
+   * since spoofing a user agent is easy enough.
+   * @return String
+   */
+  public function getClientIdentifier() {
+    return $_SERVER["REMOTE_ADDR"] . $_SERVER["HTTP_USER_AGENT"];
+  }
+
+
+  /**
+   * Check if a remember me cookie exist.
+   * @return Boolean
+   */
+  public function cookieExist() {
+    if (isset($_COOKIE[$this->rememberMeUsernameCookie])) {
+      return true;
+    }
+  }
+
+  /**
+   * Set the remember me cookies.
+   */ 
+  public function setCookies() {
+    $time = time()+60*60*24*30; // 30 days.
+    setcookie($this->rememberMeUsernameCookie, $this->model->getUsername(), $time);
+    setcookie($this->rememberMePasswordCookie, $this->model->getPassword(), $time);
+  }
+
+  /**
+   * Kill the remember me cookies.
+   */ 
+  public function killCookies() {
+    setcookie($this->rememberMeUsernameCookie, "", time() -1);
+    setcookie($this->rememberMePasswordCookie, "", time() -1);
+  }
+
+  /**
+   * Login throught the remember me cookies.
+   */
+  public function loginThroughCookies() {
+    // var_dump($_COOKIE[$this->rememberMePasswordCookie]);
+    // die();
+    if (isset($_COOKIE[$this->rememberMeUsernameCookie]) 
+      && $_COOKIE[$this->rememberMeUsernameCookie] === $this->model->getUsername()
+      && isset($_COOKIE[$this->rememberMePasswordCookie])
+      && $_COOKIE[$this->rememberMePasswordCookie] === $this->model->getPassword()) {
+      $this->model->login($this->getClientIdentifier());
+    }
+    else {
+      $this->killCookies();
+    }
   }
 }
