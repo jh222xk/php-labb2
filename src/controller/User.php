@@ -22,6 +22,21 @@ class User {
     $this->view = new \view\User($this->model);
   }
 
+
+  /**
+   * Desides which page to be shown.
+   * @return String
+   */
+  public function showPage() {
+    // User logged in, giv'em the logout!
+    if ($this->model->userIsLoggedIn()) {
+      return $this->doLogout();
+    }
+    else {
+      return $this->doLogin();
+    }
+  }
+
   /**
    * 
    */ 
@@ -38,7 +53,7 @@ class User {
     }
 
     // Render a view.
-    return $this->view->showPage();
+    return $this->view->showLogin();
     
   }
 
@@ -52,6 +67,6 @@ class User {
     }
 
     // Render a view.
-    return $this->view->showPage();
+    return $this->view->showLogout();
   }
 }

@@ -2,28 +2,19 @@
 
 namespace view;
 
+require_once("src/view/CookieJar.php");
+
 class User {
   /**
    * @var Usermodel
    */
   private $model;
+
+  private $message;
   
   function __construct(\model\User $model) {
     $this->model = $model;
-  }
-
-  /**
-   * Desides which page to be shown.
-   * @return String
-   */
-  public function showPage() {
-    // User logged in, giv'em the logout!
-    if ($this->model->userIsLoggedIn()) {
-      return $this->showLogout();
-    }
-    else {
-      return $this->showLogin();
-    }
+    $this->message = new \view\CookieJar();
   }
 
   /**
@@ -58,8 +49,10 @@ class User {
     $password = $_POST['password'];
 
     if ($this->model->getUsername() === $username && $this->model->getPassword() === $password) {
+      $this->message->save("Inloggning lyckades!");
       return true;
     }
+
     return false;
   }
 
@@ -83,6 +76,28 @@ class User {
         </fieldset>
       </form>
     ";
+
+    if ($this->didSubmit()) {
+      if ($_POST["password"] !== $this->model->getPassword()) {
+        $this->message->save("Fel lösenord!");
+      }
+      if ($_POST["username"] !== $this->model->getUsername()) {
+        $this->message->save("Fel användarnamn!");
+      }
+      if ($_POST["username"] === $this->model->getUsername() && $_POST["password"] !== $this->model->getPassword()) {
+        $this->message->save("Felaktigt användarnamn och/eller lösenord");
+      }
+      if ($_POST["password"] === $this->model->getPassword() && $_POST["username"] !== $this->model->getUsername()) {
+        $this->message->save("Felaktigt användarnamn och/eller lösenord");
+      }
+      header('Location: ' . $_SERVER['PHP_SELF']);
+    }
+    else {
+      $ret .= $this->message->load();
+    }
+
+    // var_dump($this->message->load());
+
     return $ret;
   }
 
@@ -97,6 +112,7 @@ class User {
 
       <p><a href='?logout'>Logga ut</a></p>
     ";
+    $ret .= $this->message->load();
     return $ret;
   }
 }

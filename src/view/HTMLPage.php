@@ -2,6 +2,8 @@
 
 namespace view;
 
+require_once("src/view/CurrentDateTime.php");
+
 class HTMLPage {
   /**
    * @param String $title
@@ -9,6 +11,7 @@ class HTMLPage {
    * @return String
    */
   public function echoHTML($title, $body) {
+    $currentTime = new \view\CurrentDateTime();
     $ret = "
       <!DOCTYPE html>
       <html>
@@ -19,6 +22,7 @@ class HTMLPage {
       <body>
         <h1>Laborationskod jh222xk</h1>
         $body
+        <p>". $currentTime->getCurrentDateTime() . "</p>
       </body>
       </html>
     ";

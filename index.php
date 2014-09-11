@@ -7,9 +7,9 @@ require_once("src/view/CurrentDateTime.php");
 session_start();
 
 $controller = new \controller\User();
-$htmlBody = $controller->doLogin();
+$htmlBody = $controller->showPage();
 
-$controller->doLogout();
+// $controller->doLogout();
 
 $view = new \view\HTMLPage();
 $currentTime = new \view\CurrentDateTime();
