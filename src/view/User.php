@@ -93,6 +93,10 @@ class User {
     if ($this->didPost("login")) {
       header('Location: ' . $_SERVER['PHP_SELF']);
     }
+    elseif ($this->loginThroughCookies()) {
+      $this->message->save("Inloggning genom kakor!");
+      header('Location: ' . $_SERVER['PHP_SELF']);
+    }
     else {
       $ret .= $this->message->load();
     }
@@ -113,7 +117,14 @@ class User {
 
       <p><a href='?logout'>Logga ut</a></p>
     ";
-    $ret .= $this->message->load();
+    if ($this->didGet("logout")) {
+      $this->message->save("Du har nu loggat ut!");
+      header('Location: ' . $_SERVER['PHP_SELF']);
+    }
+    else {
+      $ret .= $this->message->load();
+    }
+
     return $ret;
   }
 
@@ -166,9 +177,11 @@ class User {
       && isset($_COOKIE[$this->rememberMePasswordCookie])
       && $_COOKIE[$this->rememberMePasswordCookie] === $this->model->getPassword()) {
       $this->model->login($this->getClientIdentifier());
+      return true;
     }
     else {
       $this->killCookies();
+      return false;
     }
   }
 }

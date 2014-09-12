@@ -100,7 +100,7 @@ class User {
 
     $this->generateToken($clientIdentifier);
     // die();
-    if ($_SESSION[$this->uniqueIDSession] === $this->userID
+    if (isset($_SESSION[$this->uniqueIDSession]) && $_SESSION[$this->uniqueIDSession] === $this->userID
         && $_SESSION[$this->usernameSession] === $this->username
         && $_SESSION[$this->passwordSession] === $this->password
         && $_SESSION[$this->clientIdentifier] === $clientIdentifier) {
