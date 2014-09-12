@@ -22,36 +22,19 @@ class User {
   }
 
   /**
-   * Do the user want to be remembered?
+   * Check if a given POST var is present.
    * @return Boolean
    */
-  public function rememberUser() {
-    if (isset($_POST['remember'])) {
-      return true;
-    }
-    return false;
+  public function didPost($name) {
+    return isset($_POST[$name]);
   }
 
   /**
-   * Did the user submit the login form?
+   * Check if a given GET var is present.
    * @return Boolean
    */
-  public function didSubmit() {
-    if (isset($_POST['login'])) {
-      return true;
-    }
-    return false;
-  }
-
-  /**
-   * Did the user press the logout button?
-   * @return Boolean
-   */
-  public function didPressLogout() {
-    if (isset($_GET['logout'])) {
-      return true;
-    }
-    return false;
+  public function didGet($name) {
+    return isset($_GET[$name]);
   }
 
   /**
@@ -107,7 +90,7 @@ class User {
       </form>
     ";
 
-    if ($this->didSubmit()) {
+    if ($this->didPost("login")) {
       header('Location: ' . $_SERVER['PHP_SELF']);
     }
     else {

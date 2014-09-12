@@ -43,10 +43,10 @@ class User {
    */ 
   public function doLogin() {
     // Submitted the form?
-    if ($this->view->didSubmit()) {
+    if ($this->view->didPost("login")) {
       // Valid user credentials?
       if ($this->view->userCredentialsIsValid()) {
-        if ($this->view->rememberUser()) {
+        if ($this->view->didPost("remember")) {
           $this->view->setCookies();
         }
         // Login user.
@@ -63,7 +63,7 @@ class User {
 
   public function doLogout() {
     // Pressed logout?
-    if ($this->view->didPressLogout()) {
+    if ($this->view->didGet("logout")) {
       // Logout the user.
       // var_dump($this->cookieExist());
       // die();
