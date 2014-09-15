@@ -45,12 +45,14 @@ class User {
     // Submitted the form?
     if ($this->view->didPost("login")) {
       // Valid user credentials?
+      $this->model->hashPassword($this->model->getPassword());
       if ($this->view->userCredentialsIsValid()) {
         if ($this->view->didPost("remember")) {
           $this->view->setCookies();
         }
         // Login user.
-        $this->model->login($this->view->getClientIdentifier());
+        $this->model->login($this->view->getClientIdentifier(), $this->model->getPassword(),
+          $this->model->getHashedPassword());
       }
     }
 

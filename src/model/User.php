@@ -31,6 +31,12 @@ class User {
   private $token;
 
   /**
+   * The hashed password.
+   * @var String Example $1$HszYM0BY$UzPU/c2H41K9IEv1cMvQx1
+   */
+  private $crypted;
+
+  /**
    * The users unique ID
    * @var Integer Example 123
    */ 
@@ -84,11 +90,27 @@ class User {
   }
 
   /**
-   * Hashes the password, todo: Fix it.
+   * Hashes the password.
    */ 
-  public function hashPassword() {
-    # FIX IT!
-    return crypt($this->password);
+  public function hashPassword($password) {
+    $this->crypted = crypt($password);
+  }
+
+  /**
+   * Returns the hashed password.
+   */
+  public function getHashedPassword() {
+    return $this->crypted;
+  }
+
+  /**
+   * Check if hashed password matches.
+   * @param String $password
+   * @param String $hashedPassword
+   * @return Boolean
+   */
+  function checkHashedPassword($password, $hashedPassword) {
+    return crypt($password, $hashedPassword) === $hashedPassword;
   }
 
   /**
@@ -97,7 +119,6 @@ class User {
    */ 
   public function userIsLoggedIn($clientIdentifier) {
     // var_dump($this->getToken());
-
     $this->generateToken($clientIdentifier);
     // die();
     if (isset($_SESSION[$this->uniqueIDSession]) && $_SESSION[$this->uniqueIDSession] === $this->userID
@@ -113,12 +134,15 @@ class User {
   /**
    * Signs the user in, i.e. sets the session vars.
    */
-  public function login($clientIdentifier) {
-    $this->generateToken($clientIdentifier);
-    $_SESSION[$this->uniqueIDSession] = $this->userID;
-    $_SESSION[$this->usernameSession] = $this->username;
-    $_SESSION[$this->passwordSession] = $this->password;
-    $_SESSION[$this->clientIdentifier] = $clientIdentifier;
+  public function login($clientIdentifier, $password, $crypedPass) {
+    if ($this->checkHashedPassword($password, $crypedPass)) {
+      $this->generateToken($clientIdentifier);
+      $_SESSION[$this->uniqueIDSession] = $this->userID;
+      $_SESSION[$this->usernameSession] = $this->username;
+      $_SESSION[$this->passwordSession] = $this->password;
+      $_SESSION[$this->clientIdentifier] = $clientIdentifier;
+      return true;
+    }
     // var_dump($this->getToken());
     // die();
     // $_SESSION["USER_AGENT"] = $_SERVER['HTTP_USER_AGENT'];

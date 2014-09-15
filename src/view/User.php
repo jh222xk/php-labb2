@@ -46,8 +46,12 @@ class User {
     $username = $_POST['username'];
     $password = $_POST['password'];
 
-    if ($this->model->getUsername() === $username && $this->model->getPassword() === $password) {
+    if ($this->model->getUsername() === $username && $this->model->getPassword() === $password && $this->didPost("remember") == false) {
       $this->message->save("Inloggning lyckades!");
+      return true;
+    }
+    elseif($this->model->getUsername() === $username && $this->model->getPassword() === $password && $this->didPost("remember")) {
+      $this->message->save("Inloggning lyckades och vi kommer ihåg dig!");
       return true;
     }
     elseif(empty($username) && empty($password)) {
@@ -155,7 +159,7 @@ class User {
   public function setCookies() {
     $time = time()+60*60*24*30; // 30 days.
     setcookie($this->rememberMeUsernameCookie, $this->model->getUsername(), $time);
-    setcookie($this->rememberMePasswordCookie, $this->model->getPassword(), $time);
+    setcookie($this->rememberMePasswordCookie, $this->model->getHashedPassword(), $time);
   }
 
   /**
@@ -167,17 +171,14 @@ class User {
   }
 
   /**
-   * Login throught the remember me cookies.
+   * Login through the remember me cookies.
    */
   public function loginThroughCookies() {
-    // var_dump($_COOKIE[$this->rememberMePasswordCookie]);
-    // die();
-    if (isset($_COOKIE[$this->rememberMeUsernameCookie]) 
-      && $_COOKIE[$this->rememberMeUsernameCookie] === $this->model->getUsername()
-      && isset($_COOKIE[$this->rememberMePasswordCookie])
-      && $_COOKIE[$this->rememberMePasswordCookie] === $this->model->getPassword()) {
-      $this->model->login($this->getClientIdentifier());
-      return true;
+    if (isset($_COOKIE[$this->rememberMeUsernameCookie])
+      && isset($_COOKIE[$this->rememberMePasswordCookie])) {
+      return $this->model->login($this->getClientIdentifier(), $this->model->getPassword(),
+        $_COOKIE[$this->rememberMePasswordCookie]);
+      // return true;
     }
     else {
       $this->killCookies();
