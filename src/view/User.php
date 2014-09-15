@@ -15,6 +15,12 @@ class User {
   private $rememberMeUsernameCookie = "User::Username";
 
   private $rememberMePasswordCookie = "User::Password";
+
+  /**
+   * Secret signing key, keep secret. Maybe as an env var instead.
+   * @var String
+   */
+  private $key = '2vtH6v#tbv$JOy4PxO!ISmWdBBtL2tjBNh0GoIwJa6ePtfhu9X5OD!NIY&*0';
   
   function __construct(\model\User $model) {
     $this->model = $model;
@@ -55,13 +61,13 @@ class User {
       return true;
     }
     elseif(empty($username) && empty($password)) {
-      $this->message->save("Fel användarnamn!");
+      $this->message->save("Användarnamn saknas!");
     }
     elseif($username && empty($password)) {
-      $this->message->save("Fel lösenord!");
+      $this->message->save("Lösenord saknas!");
     }
     elseif($password && empty($username)) {
-      $this->message->save("Fel användarnamn!"); 
+      $this->message->save("Användarnamn saknas!");
     }
     elseif($username === $this->model->getUsername() && $password !== $this->model->getPassword()) {
       $this->message->save("Felaktigt användarnamn och/eller lösenord");
@@ -78,13 +84,27 @@ class User {
    * @return String
    */
   public function showLogin() {
+    if ($this->didPost("username")) {
+      setcookie("username", $_POST["username"], 0);
+    }
+    else {
+      setcookie("username", "", time() -1);
+    }
+
+    if(isset($_COOKIE["username"])) {
+      $username = $_COOKIE["username"];
+    }
+    else {
+      $username = "";
+    }
+
     $ret = "
       <h2>Ej inloggad</h2>
       <form action='.' method='post'>
         <fieldset>
           <legend>Login - Skriv in användarnamn och lösenord</legend>
           <label>Användarnamn: </label>
-          <input type='text' size='20' name='username' value='' />
+          <input type='text' size='20' name='username' value='$username' />
           <label>Lösenord: </label>
           <input type='password' size='20' name='password' value='' />
           <label>Håll mig inloggad: </label>
@@ -99,6 +119,10 @@ class User {
     }
     elseif ($this->loginThroughCookies()) {
       $this->message->save("Inloggning genom kakor!");
+      header('Location: ' . $_SERVER['PHP_SELF']);
+    }
+    elseif($this->cookieExist() && $this->loginThroughCookies() == false) {
+      $this->message->save("Felaktig information i kakan!");
       header('Location: ' . $_SERVER['PHP_SELF']);
     }
     else {
@@ -148,18 +172,28 @@ class User {
    * @return Boolean
    */
   public function cookieExist() {
-    if (isset($_COOKIE[$this->rememberMeUsernameCookie])) {
-      return true;
-    }
+    return isset($_COOKIE[$this->rememberMeUsernameCookie])
+      && isset($_COOKIE[$this->rememberMePasswordCookie]);
   }
 
   /**
    * Set the remember me cookies.
    */ 
   public function setCookies() {
-    $time = time()+60*60*24*30; // 30 days.
-    setcookie($this->rememberMeUsernameCookie, $this->model->getUsername(), $time);
-    setcookie($this->rememberMePasswordCookie, $this->model->getHashedPassword(), $time);
+    $time = time()+60; // 1 minute.
+
+    $userData = array('username' => $this->model->getUsername(), 'time' => $time);
+    $passData = array('password' => $this->model->getHashedPassword(), 'time' => $time);
+
+    // Use a hash_hmac with encoded json and sha256 as hashing algorithm.
+    $userHmac = hash_hmac('sha256', json_encode($userData), $this->key);
+    $passHmac = hash_hmac('sha256', json_encode($passData), $this->key);
+
+    $userData['hmac'] = $userHmac;
+    $passData['hmac'] = $passHmac;
+
+    setcookie($this->rememberMeUsernameCookie, base64_encode(json_encode($userData)), $time);
+    setcookie($this->rememberMePasswordCookie, base64_encode(json_encode($passData)), $time);
   }
 
   /**
@@ -171,18 +205,54 @@ class User {
   }
 
   /**
+   * Get the remember me cookies.
+   * @return Array
+   */
+  public function getCookies() {
+    $time = time()+60; // 1 minute.
+
+    // Decode the cookie.
+    $userCookie = json_decode(base64_decode($_COOKIE[$this->rememberMeUsernameCookie]));
+    $passCookie = json_decode(base64_decode($_COOKIE[$this->rememberMePasswordCookie]));
+
+    return array('user' => $userCookie, 'pass' => $passCookie);
+  }
+
+  /**
+   * Checks if the remember me cookies has expired.
+   * @return Boolean
+   */
+  public function cookieExpired() {
+    $cookies = $this->getCookies();
+
+    if ($cookies['user']->time < time() && $cookies['pass']->time < time()) {
+      return true;
+    }
+    else {
+      return false;
+    }
+  }
+
+  /**
    * Login through the remember me cookies.
+   * @return Boolean
    */
   public function loginThroughCookies() {
     if (isset($_COOKIE[$this->rememberMeUsernameCookie])
-      && isset($_COOKIE[$this->rememberMePasswordCookie])) {
-      return $this->model->login($this->getClientIdentifier(), $this->model->getPassword(),
-        $_COOKIE[$this->rememberMePasswordCookie]);
-      // return true;
+      && isset($_COOKIE[$this->rememberMePasswordCookie])
+      && $this->cookieExpired() == false) {
+
+      // Get the cookies.
+      $cookies = $this->getCookies();
+
+      // Login the user.
+      if ($cookies["user"]->username === $this->model->getUsername() 
+        && $this->model->login($this->getClientIdentifier(), $this->model->getPassword(),
+          $cookies["pass"]->password)) {
+        return true;
+      }
     }
-    else {
-      $this->killCookies();
-      return false;
-    }
+    $this->killCookies();
+    return false;
   }
 }
