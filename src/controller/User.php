@@ -18,7 +18,7 @@ class User {
   private $model;
   
   function __construct() {
-    $this->model = new \model\User(1, "Admin", "password");
+    $this->model = new \model\User(1, "Admin", "Password");
     $this->view = new \view\User($this->model);
   }
 
