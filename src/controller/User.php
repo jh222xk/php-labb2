@@ -18,7 +18,7 @@ class User {
   private $model;
   
   function __construct() {
-    $this->model = new \model\User(1, "Jesper", "asdasd");
+    $this->model = new \model\User(1, "Admin", "password");
     $this->view = new \view\User($this->model);
   }
 
@@ -43,10 +43,13 @@ class User {
    */ 
   public function doLogin() {
     // Submitted the form?
+
+    ## MOVE!!
     if ($this->view->didPost("login")) {
       // Valid user credentials?
       $this->model->hashPassword($this->model->getPassword());
       if ($this->view->userCredentialsIsValid()) {
+        ## MOVE!!
         if ($this->view->didPost("remember")) {
           $this->view->setCookies();
         }
@@ -65,6 +68,8 @@ class User {
 
   public function doLogout() {
     // Pressed logout?
+
+    ## MOVE!!
     if ($this->view->didGet("logout")) {
       // Logout the user.
       if ($this->view->cookieExist()) {

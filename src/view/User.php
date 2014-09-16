@@ -52,11 +52,15 @@ class User {
     $username = $_POST['username'];
     $password = $_POST['password'];
 
-    if ($this->model->getUsername() === $username && $this->model->getPassword() === $password && $this->didPost("remember") == false) {
+    if ($this->model->getUsername() === $username
+      && $this->model->getPassword() === $password
+      && $this->didPost("remember") == false) {
       $this->message->save("Inloggning lyckades!");
       return true;
     }
-    elseif($this->model->getUsername() === $username && $this->model->getPassword() === $password && $this->didPost("remember")) {
+    elseif($this->model->getUsername() === $username
+      && $this->model->getPassword() === $password
+      && $this->didPost("remember")) {
       $this->message->save("Inloggning lyckades och vi kommer ihåg dig!");
       return true;
     }
@@ -69,10 +73,12 @@ class User {
     elseif($password && empty($username)) {
       $this->message->save("Användarnamn saknas!");
     }
-    elseif($username === $this->model->getUsername() && $password !== $this->model->getPassword()) {
+    elseif($username === $this->model->getUsername()
+      && $password !== $this->model->getPassword()) {
       $this->message->save("Felaktigt användarnamn och/eller lösenord");
     }
-    elseif($password === $this->model->getPassword() && $username !== $this->model->getUsername()) {
+    elseif($password === $this->model->getPassword()
+      && $username !== $this->model->getUsername()) {
       $this->message->save("Felaktigt användarnamn och/eller lösenord");
     }
 
