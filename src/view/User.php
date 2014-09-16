@@ -215,7 +215,25 @@ class User {
     $userCookie = json_decode(base64_decode($_COOKIE[$this->rememberMeUsernameCookie]));
     $passCookie = json_decode(base64_decode($_COOKIE[$this->rememberMePasswordCookie]));
 
-    return array('user' => $userCookie, 'pass' => $passCookie);
+    // Store the hmac for comparison.
+    $userCookieHmac = $userCookie->hmac;
+    $passCookieHmac = $passCookie->hmac;
+
+    // Remove the hmac from the cookie data.
+    unset($userCookie->hmac);
+    unset($passCookie->hmac);
+
+    // Calculate hmac for data, should be the same as the stored one.
+    $userCalculatedHmac = hash_hmac('sha256', json_encode($userCookie), $this->key);
+    $passCalculatedHmac = hash_hmac('sha256', json_encode($passCookie), $this->key);
+
+    // Check if the hmac's is fine.
+    if ($userCookieHmac === $userCalculatedHmac && $passCookieHmac === $passCalculatedHmac) {
+      return array('user' => $userCookie, 'pass' => $passCookie);
+    }
+    else {
+      return false;
+    }
   }
 
   /**
