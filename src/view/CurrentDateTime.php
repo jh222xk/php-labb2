@@ -27,6 +27,8 @@ class CurrentDateTime {
   public function getCurrentDateTime() {
     $date = new \DateTime();
 
+    $date->setTimezone(new \DateTimeZone('Europe/Stockholm'));
+
     // Awesome concatenating…
     $ret = $this->day[$date->format('N')-1] . ", den " .
       $date->format('j') . " " . $this->month[$date->format('n')-1] .
