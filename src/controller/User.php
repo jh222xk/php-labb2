@@ -45,12 +45,12 @@ class User {
     // Submitted the form?
 
     ## MOVE!!
-    if ($this->view->didPost("login")) {
+    if ($this->view->userWantsToLogin()) {
       // Valid user credentials?
       $this->model->hashPassword($this->model->getPassword());
       if ($this->view->userCredentialsIsValid()) {
         ## MOVE!!
-        if ($this->view->didPost("remember")) {
+        if ($this->view->userWantsToBeRemembered()) {
           $this->view->setCookies();
         }
         // Login user.
@@ -70,7 +70,7 @@ class User {
     // Pressed logout?
 
     ## MOVE!!
-    if ($this->view->didGet("logout")) {
+    if ($this->view->userWantsToLogout()) {
       // Logout the user.
       if ($this->view->cookieExist()) {
         $this->view->killCookies();

@@ -28,19 +28,27 @@ class User {
   }
 
   /**
-   * Check if a given POST var is present.
+   * Checks if the user has posted login.
    * @return Boolean
    */
-  public function didPost($name) {
-    return isset($_POST[$name]);
+  public function userWantsToLogin() {
+    return isset($_POST["login"]);
   }
 
   /**
-   * Check if a given GET var is present.
+   * Checks if the user has posted remember me.
    * @return Boolean
    */
-  public function didGet($name) {
-    return isset($_GET[$name]);
+  public function userWantsToBeRemembered() {
+    return isset($_POST["remember"]);
+  }
+
+  /**
+   * Checks if the user wants to logout.
+   * @return Boolean
+   */
+  public function userWantsToLogout() {
+    return isset($_GET["logout"]);
   }
 
   /**
@@ -54,13 +62,13 @@ class User {
 
     if ($this->model->getUsername() === $username
       && $this->model->getPassword() === $password
-      && $this->didPost("remember") == false) {
+      && $this->userWantsToBeRemembered() == false) {
       $this->message->save("Inloggning lyckades!");
       return true;
     }
     elseif($this->model->getUsername() === $username
       && $this->model->getPassword() === $password
-      && $this->didPost("remember")) {
+      && $this->userWantsToBeRemembered()) {
       $this->message->save("Inloggning lyckades och vi kommer ihåg dig!");
       return true;
     }
@@ -90,7 +98,7 @@ class User {
    * @return String
    */
   public function showLogin() {
-    if ($this->didPost("username")) {
+    if ($this->userWantsToLogin()) {
       setcookie("username", $_POST["username"], 0);
     }
     else {
@@ -120,7 +128,7 @@ class User {
       </form>
     ";
 
-    if ($this->didPost("login")) {
+    if ($this->userWantsToLogin()) {
       header('Location: ' . $_SERVER['PHP_SELF']);
     }
     elseif ($this->loginThroughCookies()) {
@@ -151,7 +159,7 @@ class User {
 
       <p><a href='?logout'>Logga ut</a></p>
     ";
-    if ($this->didGet("logout")) {
+    if ($this->userWantsToLogout()) {
       $this->message->save("Du har nu loggat ut!");
       header('Location: ' . $_SERVER['PHP_SELF']);
     }
