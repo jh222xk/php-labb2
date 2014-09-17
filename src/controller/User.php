@@ -20,6 +20,7 @@ class User {
   function __construct() {
     $this->model = new \model\User(1, "Admin", "Password");
     $this->view = new \view\User($this->model);
+    $this->model->hashPassword($this->model->getPassword());
   }
 
 
@@ -30,7 +31,6 @@ class User {
   public function showPage() {
     // User logged in, giv'em the logout!
     if ($this->model->userIsLoggedIn($this->view->getClientIdentifier())) {
-      // $this->view->loginThroughCookies();
       return $this->doLogout();
     }
     else {
@@ -43,13 +43,10 @@ class User {
    */ 
   public function doLogin() {
     // Submitted the form?
-
-    ## MOVE!!
     if ($this->view->userWantsToLogin()) {
       // Valid user credentials?
-      $this->model->hashPassword($this->model->getPassword());
       if ($this->view->userCredentialsIsValid()) {
-        ## MOVE!!
+        // If the user want to be remembered set some cookies for that.
         if ($this->view->userWantsToBeRemembered()) {
           $this->view->setCookies();
         }
@@ -59,30 +56,23 @@ class User {
       }
     }
 
-    // var_dump($_SESSION);
-
     // Render a view.
     return $this->view->showLogin();
-    
   }
 
   public function doLogout() {
     // Pressed logout?
-
-    ## MOVE!!
     if ($this->view->userWantsToLogout()) {
-      // Logout the user.
+      // If the user has some cookies set, kill'em.
       if ($this->view->cookieExist()) {
         $this->view->killCookies();
       }
+      // Logout the user.
       $this->model->logout();
     }
-
-    // var_dump($_SESSION);
 
     // Render a view.
     return $this->view->showLogout();
   }
-
 
 }
