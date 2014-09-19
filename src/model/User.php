@@ -28,8 +28,6 @@ class User {
    */
   private $clientIdentifier = "User::clientIdentifier";
 
-  private $token;
-
   /**
    * The hashed password.
    * @var String Example $1$HszYM0BY$UzPU/c2H41K9IEv1cMvQx1
@@ -118,14 +116,10 @@ class User {
    * @return Boolean
    */ 
   public function userIsLoggedIn($clientIdentifier) {
-    // var_dump($this->getToken());
-    $this->generateToken($clientIdentifier);
-    // die();
     if (isset($_SESSION[$this->uniqueIDSession]) && $_SESSION[$this->uniqueIDSession] === $this->userID
         && $_SESSION[$this->usernameSession] === $this->username
         && $_SESSION[$this->passwordSession] === $this->password
-        && $_SESSION[$this->clientIdentifier] === $clientIdentifier) {
-        // var_dump($_SESSION[$this->clientIdentifier]);
+        && $_SESSION[$this->clientIdentifier] === base64_encode($clientIdentifier)) {
       return true;
     }
     return false;
@@ -136,16 +130,12 @@ class User {
    */
   public function login($clientIdentifier, $password, $crypedPass) {
     if ($this->checkHashedPassword($password, $crypedPass)) {
-      $this->generateToken($clientIdentifier);
       $_SESSION[$this->uniqueIDSession] = $this->userID;
       $_SESSION[$this->usernameSession] = $this->username;
       $_SESSION[$this->passwordSession] = $this->password;
-      $_SESSION[$this->clientIdentifier] = $clientIdentifier;
+      $_SESSION[$this->clientIdentifier] = base64_encode($clientIdentifier);
       return true;
     }
-    // var_dump($this->getToken());
-    // die();
-    // $_SESSION["USER_AGENT"] = $_SERVER['HTTP_USER_AGENT'];
   }
 
   /**
@@ -155,13 +145,5 @@ class User {
     unset($_SESSION[$this->uniqueIDSession]);
     unset($_SESSION[$this->usernameSession]);
     unset($_SESSION[$this->passwordSession]);
-  }
-
-  public function getToken() {
-    return $this->token;
-  }
-
-  public function generateToken($input) {
-    $this->token = md5($input);
   }
 }
